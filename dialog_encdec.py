@@ -9,7 +9,7 @@ __authors__ = ("Iulian Vlad Serban")
 import theano
 import theano.tensor as T
 import numpy as np
-import cPickle
+import pickle
 import logging
 logger = logging.getLogger(__name__)
 
@@ -1251,17 +1251,17 @@ class DialogEncoderDecoder(Model):
         updates = []
          
         grads = T.grad(training_cost, params)
-        grads = OrderedDict(zip(params, grads))
+        grads = OrderedDict(list(zip(params, grads)))
 
         # Gradient clipping
         c = numpy.float32(self.cutoff)
         clip_grads = []
         
-        norm_gs = T.sqrt(sum(T.sum(g ** 2) for p, g in grads.items()))
+        norm_gs = T.sqrt(sum(T.sum(g ** 2) for p, g in list(grads.items())))
         normalization = T.switch(T.ge(norm_gs, c), c / norm_gs, np.float32(1.))
         notfinite = T.or_(T.isnan(norm_gs), T.isinf(norm_gs))
          
-        for p, g in grads.items():
+        for p, g in list(grads.items()):
             clip_grads.append((p, T.switch(notfinite, numpy.float32(.1) * p, g * normalization)))
         
         grads = OrderedDict(clip_grads)
@@ -1614,7 +1614,7 @@ class DialogEncoderDecoder(Model):
         self.rng = numpy.random.RandomState(state['seed']) 
 
         # Load dictionary
-        raw_dict = cPickle.load(open(self.dictionary, 'r'))
+        raw_dict = pickle.load(open(self.dictionary, 'rb'))
 
         # Probabilities for each term in the corpus used for noise contrastive estimation (NCE)
         self.noise_probs = [x[2] for x in sorted(raw_dict, key=operator.itemgetter(1))]
@@ -1674,7 +1674,7 @@ class DialogEncoderDecoder(Model):
         if self.initialize_from_pretrained_word_embeddings == True:
             # Load pretrained word embeddings from pickled file
             logger.debug("Loading pretrained word embeddings")
-            pretrained_embeddings = cPickle.load(open(self.pretrained_word_embeddings_file, 'r'))
+            pretrained_embeddings = pickle.load(open(self.pretrained_word_embeddings_file, 'rb'))
 
             # Check all dimensions match from the pretrained embeddings
             assert(self.idim == pretrained_embeddings[0].shape[0])

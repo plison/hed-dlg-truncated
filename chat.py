@@ -4,7 +4,7 @@ __authors__ = ("Iulian Serban, Alessandro Sordoni")
 __contact__ = "Iulian Serban <julianserban@gmail.com>"
 
 import argparse
-import cPickle
+import pickle
 import traceback
 import itertools
 import logging
@@ -87,7 +87,7 @@ def main():
     model_path = args.model_prefix + "_model.npz"
 
     with open(state_path) as src:
-        state.update(cPickle.load(src)) 
+        state.update(pickle.load(src)) 
     
     logging.basicConfig(level=getattr(logging, state['level']), format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
      
@@ -107,7 +107,7 @@ def main():
     utterances = collections.deque()
     
     while (True):
-       var = raw_input("User - ")
+       var = input("User - ")
 
        # Increase number of utterances. We just set it to zero for simplicity so that model has no memory. 
        # But it works fine if we increase this number
@@ -131,7 +131,7 @@ def main():
        utterances.append(sentences[0][0].split())
 
        reply = sentences[0][0].encode('utf-8')
-       print "AI - ", remove_speaker_tokens(reply)
+       print("AI - ", remove_speaker_tokens(reply))
 
 
 if __name__ == "__main__":

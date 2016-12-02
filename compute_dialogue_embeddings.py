@@ -6,7 +6,7 @@ This script computes dialogue embeddings for dialogues found in a text file.
 #!/usr/bin/env python
 
 import argparse
-import cPickle
+import pickle
 import traceback
 import logging
 import time
@@ -110,7 +110,7 @@ def main():
     model_path = args.model_prefix + "_model.npz"
 
     with open(state_path) as src:
-        state.update(cPickle.load(src))
+        state.update(pickle.load(src))
 
     logging.basicConfig(level=getattr(logging, state['level']), format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
 
@@ -172,7 +172,7 @@ def main():
             dialogue_encodings.append(encs[i])
 
     # Save encodings to disc
-    cPickle.dump(dialogue_encodings, open(args.output + '.pkl', 'w'))
+    pickle.dump(dialogue_encodings, open(args.output + '.pkl', 'wb'))
 
 if __name__ == "__main__":
     main()

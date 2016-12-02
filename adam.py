@@ -39,7 +39,7 @@ def Adam(grads, lr=0.0002, b1=0.1, b2=0.001, e=1e-8):
     fix1 = 1. - (1. - b1)**i_t
     fix2 = 1. - (1. - b2)**i_t
     lr_t = lr * (T.sqrt(fix2) / fix1)
-    for p, g in grads.items():
+    for p, g in list(grads.items()):
         m = sharedX(p.get_value() * 0.)
         v = sharedX(p.get_value() * 0.)
         m_t = (b1 * g) + ((1. - b1) * m)

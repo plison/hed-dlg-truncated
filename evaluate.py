@@ -14,7 +14,7 @@ THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32,allow_gc=True,scan.allow_gc
 """
 
 import argparse
-import cPickle
+import pickle
 import traceback
 import logging
 import time
@@ -64,7 +64,7 @@ def main():
     model_path = args.model_prefix + "_model.npz"
 
     with open(state_path) as src:
-        state.update(cPickle.load(src)) 
+        state.update(pickle.load(src)) 
     
     logging.basicConfig(level=getattr(logging, state['level']), format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
      
@@ -105,7 +105,7 @@ def main():
         assert(test_data.data_len == document_ids.shape[0])
 
     else:
-        print 'Warning no file with document ids given... standard deviations cannot be computed.'
+        print('Warning no file with document ids given... standard deviations cannot be computed.')
         document_ids = numpy.zeros((test_data.data_len), dtype='int32')
         unique_document_ids = numpy.unique(document_ids)
 
@@ -121,7 +121,7 @@ def main():
     logger.debug("[TEST START]") 
 
     while True:
-        batch = test_data.next()
+        batch = next(test_data)
         # Train finished
         if not batch:
             break
@@ -165,10 +165,10 @@ def main():
      
     logger.debug("[TEST END]") 
 
-    print 'test_wordpreds_done (number of words) ', test_wordpreds_done
+    print('test_wordpreds_done (number of words) ', test_wordpreds_done)
     test_cost /= test_wordpreds_done
 
-    print "** test cost (NLL) = %.4f, test word-perplexity = %.4f " % (float(test_cost), float(math.exp(test_cost)))  
+    print("** test cost (NLL) = %.4f, test word-perplexity = %.4f " % (float(test_cost), float(math.exp(test_cost))))  
 
     logger.debug("All done, exiting...")
 

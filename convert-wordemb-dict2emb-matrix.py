@@ -24,7 +24,7 @@ import operator
 import os
 import sys
 import logging
-import cPickle
+import pickle
 import itertools
 from collections import Counter
 from utils import *
@@ -45,7 +45,7 @@ def safe_pickle(obj, filename):
         logger.info("Saving to %s." % filename)
 
     with open(filename, 'wb') as f:
-        cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 # Takes a word as input and creates a set of one-character changes to the word (splits, transposes, replaces, insert etc.).
 def edits1(word):
@@ -67,7 +67,7 @@ logger = logging.getLogger('covert-wordemb-dict2emb-matrix')
 # These are the words, which won't be looked upn in the pretrained word embedding dictionary
 non_word_tokens = ['<s>', '</s>', '<t>', '</t>', '<unk>', '.', ',', '``', '\'\'', '[', ']', '`', '-', '--', '\'', '<pause>', '<first_speaker>', '<second_speaker>', '<third_speaker>', '<minor_speaker>', '<voice_over>', '<off_screen>', '</d>']
 
-print 'The following non-word tokens will not be extracted from the pretrained embeddings: ', non_word_tokens
+print('The following non-word tokens will not be extracted from the pretrained embeddings: ', non_word_tokens)
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -111,10 +111,10 @@ if not os.path.isfile(args.embedding_dictionary):
 
 
 # Load model dictionary
-model_dict = cPickle.load(open(args.model_dictionary, 'r'))
+model_dict = pickle.load(open(args.model_dictionary, 'rb'))
 
 str_to_idx = dict([(tok, tok_id) for tok, tok_id, _, _ in model_dict])
-i_dim = len(str_to_idx.keys())
+i_dim = len(list(str_to_idx.keys()))
 logger.info("Vocabulary size: %d" % i_dim)
 
 word_freq = dict([(tok_id, freq) for _, tok_id, freq, _ in model_dict])
@@ -124,12 +124,12 @@ if uses_word2vec:
     import gensim, logging
     embedding_dict = gensim.models.Word2Vec.load_word2vec_format(args.embedding_dictionary, binary=True)
 else:
-    embedding_dict = cPickle.load(open(args.embedding_dictionary, "rb" ) )
+    embedding_dict = pickle.load(open(args.embedding_dictionary, "rb" ) )
 
 if uses_word2vec:
     raw_emb_dim = embedding_dict['hello'].shape[0]
 else:
-    raw_emb_dim = embedding_dict[embedding_dict.keys()[0]].shape[0]
+    raw_emb_dim = embedding_dict[list(embedding_dict.keys())[0]].shape[0]
 
 logger.info("Raw word embedding dim: %d" % raw_emb_dim)
 
@@ -147,7 +147,7 @@ total_freq = 0
 total_freq_non_word = 0
 
 # Go through every word in the model dictionary and add the corresponding word embedding to W_emb_raw
-for key in str_to_idx.iterkeys():
+for key in str_to_idx.keys():
     index = str_to_idx[key]
     total_freq = total_freq + word_freq[index]
 
@@ -162,7 +162,7 @@ for key in str_to_idx.iterkeys():
         unique_word_indices_found.append(index)
         words_found = words_found + 1
     elif len(key) > 3 and (key[-1] == '.' and key[0:len(key)-1] in embedding_dict): # Remove punctuation mark
-        print 'Assuming ' + str(key) + ' -> ' + str(key[0:len(key)-1])
+        print('Assuming ' + str(key) + ' -> ' + str(key[0:len(key)-1]))
         W_emb_raw[index, :] = embedding_dict[key[0:len(key)-1]]
         unique_word_indices_found.append(index)
         words_found = words_found + 1
@@ -202,7 +202,7 @@ for key in str_to_idx.iterkeys():
                         W_emb_raw[index, :] = embedding_dict[suggestion]
                         words_found = words_found + 1
                         word_was_found = True
-                        print 'Correcting ' + str(key) + ' -> ' + str(suggestion)
+                        print('Correcting ' + str(key) + ' -> ' + str(suggestion))
                         break
 
         if word_was_found == True:
@@ -226,7 +226,7 @@ logger.info("non-word terms in corpus: %d" % total_freq_non_word)
 logger.info("Percentage non-word terms in corpus: %f" % (float(total_freq_non_word)/float(total_freq)))
 
 
-print 'unique_words_left_out', unique_words_left_out
+print('unique_words_left_out', unique_words_left_out)
 
 assert(raw_emb_dim >= emb_dim)
 

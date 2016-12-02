@@ -15,7 +15,7 @@ import operator
 import os
 import sys
 import logging
-import cPickle
+import pickle
 
 from collections import Counter
 
@@ -29,7 +29,7 @@ def safe_pickle(obj, filename):
         logger.info("Saving to %s." % filename)
     
     with open(filename, 'wb') as f:
-        cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 # Thanks to Emile on Stackoverflow:
 # http://stackoverflow.com/questions/4322705/split-a-list-into-nested-lists-on-a-value
@@ -64,7 +64,7 @@ if not os.path.isfile(args.input):
     raise Exception("Input file not found!")
 
 logger.info("Loading dialogue corpus")
-data = cPickle.load(open(args.input, 'r'))
+data = pickle.load(open(args.input, 'rb'))
 data_len = len(data)
 
 logger.info('Corpus loaded... Data len is %d' % data_len)
@@ -95,7 +95,7 @@ for i in range(data_len):
     for j in range(1, s):
         start_index = j*args.consecutive_examples_to_merge
         merged_example = []
-        for k in reversed(range(args.consecutive_examples_to_merge)):
+        for k in reversed(list(range(args.consecutive_examples_to_merge))):
             merged_example += new_examples[start_index-k-1] + [int(args.token_id)]
         processed_binarized_corpus.append(merged_example)
 

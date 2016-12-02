@@ -12,7 +12,7 @@ import operator
 import os
 import sys
 import logging
-import cPickle
+import pickle
 
 from collections import Counter
 
@@ -26,7 +26,7 @@ def safe_pickle(obj, filename):
         logger.info("Saving to %s." % filename)
     
     with open(filename, 'wb') as f:
-        cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -47,7 +47,7 @@ unk = "<unk>"
 if args.dict != "":
     # Load external dictionary
     assert os.path.isfile(args.dict)
-    vocab = dict([(x[0], x[1]) for x in cPickle.load(open(args.dict, "r"))])
+    vocab = dict([(x[0], x[1]) for x in pickle.load(open(args.dict, "r"))])
     
     # Check consistency
     assert '<unk>' in vocab
@@ -138,7 +138,7 @@ for line, dialogue in enumerate(open(args.input, 'r')):
 safe_pickle(binarized_corpus, args.output + ".dialogues.pkl")
 
 if args.dict == "":
-     safe_pickle([(word, word_id, freqs[word_id], df[word_id]) for word, word_id in vocab.items()], args.output + ".dict.pkl")
+     safe_pickle([(word, word_id, freqs[word_id], df[word_id]) for word, word_id in list(vocab.items())], args.output + ".dict.pkl")
 
 logger.info("Number of unknowns %d" % unknowns)
 logger.info("Number of terms %d" % num_terms)

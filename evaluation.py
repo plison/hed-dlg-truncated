@@ -34,13 +34,13 @@ def count_ngrams(sentences, n=4):
         local_counts = {}
         list_len = len(sentence)	
          
-        for k in xrange(1, n + 1):
+        for k in range(1, n + 1):
             for i in range(list_len - k + 1):
                 ngram = tuple(sentence[i:i+k])
                 local_counts[ngram] = local_counts.get(ngram, 0) + 1
 	    	
 		### Store maximum occurrence; useful for multireference bleu
-		for ngram, count in local_counts.items():
+		for ngram, count in list(local_counts.items()):
 			global_counts[ngram] = max(global_counts.get(ngram, 0), count)
 	return global_counts
 
@@ -139,14 +139,14 @@ class Bleu:
         candidate = normalize(candidate)
 
         stats = numpy.zeros((2 * self.n + 1,))	
-        stats[-1] = get_ref_length(map(len, refs), len(candidate))
+        stats[-1] = get_ref_length(list(map(len, refs)), len(candidate))
 
         cand_ngram_counts = count_ngrams([candidate], self.n)
         refs_ngram_counts = count_ngrams(refs, self.n)
 
-        for ngram, count in cand_ngram_counts.items():
+        for ngram, count in list(cand_ngram_counts.items()):
             stats[len(ngram) + self.n - 1] += min(count, refs_ngram_counts.get(ngram, 0)) 
-        for k in xrange(1, self.n + 1):
+        for k in range(1, self.n + 1):
             stats[k - 1] = max(len(candidate) - k + 1, 0)
         self.statistics.append(stats)
 
@@ -395,7 +395,7 @@ class TFIDF_CS:
             cand_vector_norm = 0
             
             # Compute irrespective of reference
-            for word_index in cand_counter.keys():
+            for word_index in list(cand_counter.keys()):
                 cand_vector_norm += (cand_counter[word_index] * math.log(self.document_count/max(1, self.model.document_freq[word_index])))**2
             cand_vector_norm = numpy.sqrt(cand_vector_norm)
 

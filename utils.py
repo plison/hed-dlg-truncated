@@ -24,7 +24,7 @@ def Adam(grads, lr=0.0002, b1=0.1, b2=0.001, e=1e-8):
 
 def Adagrad(grads, lr):
     updates = OrderedDict()
-    for param in grads.keys():
+    for param in list(grads.keys()):
         # sum_square_grad := \sum g^2
         sum_square_grad = sharedX(param.get_value() * 0.)
         if param.name is not None:
@@ -43,7 +43,7 @@ def Adagrad(grads, lr):
 
 def Adadelta(grads, decay=0.95, epsilon=1e-6):
     updates = OrderedDict()
-    for param in grads.keys():
+    for param in list(grads.keys()):
         # mean_squared_grad := E[g^2]_{t-1}
         mean_square_grad = sharedX(param.get_value() * 0.)
         # mean_square_dx := E[(\Delta x)^2]_{t-1}
@@ -82,7 +82,7 @@ def RMSProp(grads, lr, decay=0.95, eta=0.9, epsilon=1e-6):
     RMSProp gradient method
     """ 
     updates = OrderedDict()
-    for param in grads.keys():
+    for param in list(grads.keys()):
         # mean_squared_grad := E[g^2]_{t-1}
         mean_square_grad = sharedX(param.get_value() * 0.)
         mean_grad = sharedX(param.get_value() * 0.)
@@ -148,7 +148,7 @@ def OrthogonalInit(rng, sizeX, sizeY, sparsity=-1, scale=1):
         sparsity = numpy.minimum(sizeY, sparsity)
 
     values = numpy.zeros((sizeX, sizeY), dtype=theano.config.floatX)
-    for dx in xrange(sizeX):
+    for dx in range(sizeX):
         perm = rng.permutation(sizeY)
         new_vals = rng.normal(loc=0, scale=scale, size=(sparsity,))
         values[dx, perm[:sparsity]] = new_vals
@@ -187,7 +187,7 @@ def NormalInit(rng, sizeX, sizeY, scale=0.01, sparsity=-1):
      
     sparsity = numpy.minimum(sizeY, sparsity)
     values = numpy.zeros((sizeX, sizeY), dtype=theano.config.floatX)
-    for dx in xrange(sizeX):
+    for dx in range(sizeX):
         perm = rng.permutation(sizeY)
         new_vals = rng.normal(loc=0, scale=scale, size=(sparsity,))
         values[dx, perm[:sparsity]] = new_vals

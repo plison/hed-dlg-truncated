@@ -42,7 +42,7 @@ def add_random_variables_to_batch(state, rng, batch, prev_batch, evaluate_mode):
     Ran_Var_ConstUtterance = numpy.zeros((batch['x'].shape[0], batch['x'].shape[1], state['latent_gaussian_per_utterance_dim']), dtype='float32')
 
     # Go through each sample, find end-of-utterance indices and sample random variables
-    for idx in xrange(batch['x'].shape[1]):
+    for idx in range(batch['x'].shape[1]):
         # Find end-of-utterance indices
         eos_indices = numpy.where(batch['x'][:, idx] == state['eos_sym'])[0].tolist()
 
@@ -95,7 +95,7 @@ def add_random_variables_to_batch(state, rng, batch, prev_batch, evaluate_mode):
 def create_padded_batch(state, rng, x, force_end_of_utterance_token = False):
     # Find max length in batch
     mx = 0
-    for idx in xrange(len(x[0])):
+    for idx in range(len(x[0])):
         mx = max(mx, len(x[0][idx]))
 
     # Take into account that sometimes we need to add the end-of-utterance symbol at the start
@@ -113,7 +113,7 @@ def create_padded_batch(state, rng, x, force_end_of_utterance_token = False):
     # Keep track of number of predictions and maximum dialogue length.
     num_preds = 0
     max_length = 0
-    for idx in xrange(len(x[0])):
+    for idx in range(len(x[0])):
         # Insert sequence idx in a column of matrix X
         dialogue_length = len(x[0][idx])
 
@@ -189,7 +189,7 @@ class Iterator(SSIterator):
 
         # Store whether the iterator operates in evaluate mode or not
         self.evaluate_mode = kwargs.pop('evaluate_mode', False)
-        print 'Data Iterator Evaluate Mode: ', self.evaluate_mode
+        print('Data Iterator Evaluate Mode: ', self.evaluate_mode)
 
     def get_homogenous_batch_iter(self, batch_size = -1):
         while True:
@@ -197,7 +197,7 @@ class Iterator(SSIterator):
            
             data = []
             for k in range(self.k_batches):
-                batch = SSIterator.next(self)
+                batch = SSIterator.__next__(self)
                 if batch:
                     data.append(batch)
             
@@ -214,7 +214,7 @@ class Iterator(SSIterator):
 
             x = numpy.asarray(list(itertools.chain(data_x)))
 
-            lens = numpy.asarray([map(len, x)])
+            lens = numpy.asarray([list(map(len, x))])
             order = numpy.argsort(lens.max(axis=0))
                  
             for k in range(number_of_batches):
@@ -261,7 +261,7 @@ class Iterator(SSIterator):
         SSIterator.start(self)
         self.batch_iter = None
 
-    def next(self, batch_size = -1):
+    def __next__(self, batch_size = -1):
         """ 
         We can specify a batch size,
         independent of the object initialization. 

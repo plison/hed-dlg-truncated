@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-import cPickle
+import pickle
 import traceback
 import logging
 import time
@@ -72,7 +72,7 @@ def main():
     model_path = args.model_prefix + "_model.npz"
 
     with open(state_path) as src:
-        state.update(cPickle.load(src))
+        state.update(pickle.load(src))
 
     logging.basicConfig(level=getattr(logging, state['level']), format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
 
@@ -105,7 +105,7 @@ def main():
     # Write to output file
     output_handle = open(args.output, "w")
     for context_sample in context_samples:
-        print >> output_handle, '\t'.join(context_sample)
+        print('\t'.join(context_sample), file=output_handle)
     output_handle.close()
     print('Saving to file finished.')
     print('All done!')

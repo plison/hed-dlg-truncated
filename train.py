@@ -10,7 +10,7 @@ import time
 import traceback
 import sys
 import argparse
-import cPickle
+import pickle
 import logging
 import search
 import pprint
@@ -59,21 +59,21 @@ def init_timings():
     return timings
 
 def save(model, timings, post_fix = ''):
-    print "Saving the model..."
+    print("Saving the model...")
 
     # ignore keyboard interrupt while saving
     start = time.time()
     s = signal.signal(signal.SIGINT, signal.SIG_IGN)
     
     model.save(model.state['save_dir'] + '/' + model.state['run_id'] + "_" + model.state['prefix'] + post_fix + 'model.npz')
-    cPickle.dump(model.state, open(model.state['save_dir'] + '/' +  model.state['run_id'] + "_" + model.state['prefix'] + post_fix + 'state.pkl', 'w'))
+    pickle.dump(model.state, open(model.state['save_dir'] + '/' +  model.state['run_id'] + "_" + model.state['prefix'] + post_fix + 'state.pkl', 'wb'))
     numpy.savez(model.state['save_dir'] + '/' + model.state['run_id'] + "_" + model.state['prefix'] + post_fix + 'timing.npz', **timings)
     signal.signal(signal.SIGINT, s)
     
-    print "Model saved, took {}".format(time.time() - start)
+    print("Model saved, took {}".format(time.time() - start))
 
 def load(model, filename, parameter_strings_to_ignore):
-    print "Loading the model..."
+    print("Loading the model...")
 
     # ignore keyboard interrupt while saving
     start = time.time()
@@ -81,7 +81,7 @@ def load(model, filename, parameter_strings_to_ignore):
     model.load(filename, parameter_strings_to_ignore)
     signal.signal(signal.SIGINT, s)
 
-    print "Model loaded, took {}".format(time.time() - start)
+    print("Model loaded, took {}".format(time.time() - start))
 
 def main(args):     
     logging.basicConfig(level = logging.DEBUG,
@@ -108,7 +108,7 @@ def main(args):
                 if len(f) > len(auto_resume_postfix):
                     if f[len(f) - len(auto_resume_postfix):len(f)] == auto_resume_postfix:
                         if len(resume_filename) > 0:
-                            print 'ERROR: FOUND MULTIPLE MODELS IN DIRECTORY:', directory
+                            print('ERROR: FOUND MULTIPLE MODELS IN DIRECTORY:', directory)
                             assert False
                         else:
                             resume_filename = directory + f[0:len(f)-len('__auto_model.npz')]
@@ -135,9 +135,9 @@ def main(args):
         if os.path.isfile(state_file) and os.path.isfile(timings_file):
             logger.debug("Loading previous state")
             
-            state = cPickle.load(open(state_file, 'r'))
-            timings = dict(numpy.load(open(timings_file, 'r')))
-            for x, y in timings.items():
+            state = pickle.load(open(state_file, 'rb'))
+            timings = dict(numpy.load(open(timings_file, 'rb')))
+            for x, y in list(timings.items()):
                 timings[x] = list(y)
 
             # Increment seed to make sure we get newly shuffled batches when training on large datasets
@@ -244,14 +244,14 @@ def main(args):
         if step % 200 == 0:
             # First generate stochastic samples
             for param in model.params:
-                print "%s = %.4f" % (param.name, numpy.sum(param.get_value() ** 2) ** 0.5)
+                print("%s = %.4f" % (param.name, numpy.sum(param.get_value() ** 2) ** 0.5))
 
             samples, costs = random_sampler.sample([[]], n_samples=1, n_turns=3)
-            print "Sampled : {}".format(samples[0])
+            print("Sampled : {}".format(samples[0]))
 
 
         ### Training phase
-        batch = train_data.next()
+        batch = next(train_data)
 
         # Train finished
         if not batch:
@@ -283,11 +283,11 @@ def main(args):
             c, kl_divergence_cost, posterior_mean_variance = train_batch(x_data, x_data_reversed, max_length, x_cost_mask, x_reset, ran_cost_utterance, ran_decoder_drop_mask)
 
         # Print batch statistics
-        print 'cost_sum', c
-        print 'cost_mean', c / float(numpy.sum(x_cost_mask))
-        print 'kl_divergence_cost_sum', kl_divergence_cost
-        print 'kl_divergence_cost_mean', kl_divergence_cost / float(len(numpy.where(x_data == model.eos_sym)[0]))
-        print 'posterior_mean_variance', posterior_mean_variance
+        print('cost_sum', c)
+        print('cost_mean', c / float(numpy.sum(x_cost_mask)))
+        print('kl_divergence_cost_sum', kl_divergence_cost)
+        print('kl_divergence_cost_mean', kl_divergence_cost / float(len(numpy.where(x_data == model.eos_sym)[0])))
+        print('posterior_mean_variance', posterior_mean_variance)
 
 
         if numpy.isinf(c) or numpy.isnan(c):
@@ -321,7 +321,7 @@ def main(args):
 
             # We need to catch exceptions due to high numbers in exp
             try:
-                print ".. %.2d:%.2d:%.2d %4d mb # %d bs %d maxl %d acc_cost = %.4f acc_word_perplexity = %.4f cur_cost = %.4f cur_word_perplexity = %.4f acc_mean_word_error = %.4f acc_mean_kl_divergence_cost = %.8f acc_mean_posterior_variance = %.8f" % (h, m, s,\
+                print(".. %.2d:%.2d:%.2d %4d mb # %d bs %d maxl %d acc_cost = %.4f acc_word_perplexity = %.4f cur_cost = %.4f cur_word_perplexity = %.4f acc_mean_word_error = %.4f acc_mean_kl_divergence_cost = %.8f acc_mean_posterior_variance = %.8f" % (h, m, s,\
                                  state['time_stop'] - (time.time() - start_time)/60.,\
                                  step, \
                                  batch['x'].shape[1], \
@@ -332,7 +332,7 @@ def main(args):
                                  math.exp(current_train_cost), \
                                  float(train_misclass)/float(train_done), \
                                  float(train_kl_divergence_cost/train_done), \
-                                 float(train_posterior_mean_variance/train_dialogues_done))
+                                 float(train_posterior_mean_variance/train_dialogues_done)))
             except:
                 pass
 
@@ -355,32 +355,32 @@ def main(args):
                     var_costs[k] = var_cost
                     gradients_wrt_softmax[k, :, :] = grads_wrt_softmax
 
-                print 'mean softmax_costs', numpy.mean(softmax_costs)
-                print 'std softmax_costs', numpy.std(softmax_costs)
+                print('mean softmax_costs', numpy.mean(softmax_costs))
+                print('std softmax_costs', numpy.std(softmax_costs))
 
-                print 'mean var_costs', numpy.mean(var_costs)
-                print 'std var_costs', numpy.std(var_costs)
+                print('mean var_costs', numpy.mean(var_costs))
+                print('std var_costs', numpy.std(var_costs))
 
-                print 'mean gradients_wrt_softmax', numpy.mean(numpy.abs(numpy.mean(gradients_wrt_softmax, axis=0))), numpy.mean(gradients_wrt_softmax, axis=0)
-                print 'std gradients_wrt_softmax', numpy.mean(numpy.std(gradients_wrt_softmax, axis=0)), numpy.std(gradients_wrt_softmax, axis=0)
+                print('mean gradients_wrt_softmax', numpy.mean(numpy.abs(numpy.mean(gradients_wrt_softmax, axis=0))), numpy.mean(gradients_wrt_softmax, axis=0))
+                print('std gradients_wrt_softmax', numpy.mean(numpy.std(gradients_wrt_softmax, axis=0)), numpy.std(gradients_wrt_softmax, axis=0))
 
 
-                print 'std greater than mean', numpy.where(numpy.std(gradients_wrt_softmax, axis=0) > numpy.abs(numpy.mean(gradients_wrt_softmax, axis=0)))[0].shape[0]
+                print('std greater than mean', numpy.where(numpy.std(gradients_wrt_softmax, axis=0) > numpy.abs(numpy.mean(gradients_wrt_softmax, axis=0)))[0].shape[0])
 
                 Wd_s_q = model.utterance_decoder.Wd_s_q.get_value()
 
-                print 'Wd_s_q all', numpy.sum(numpy.abs(Wd_s_q)), numpy.mean(numpy.abs(Wd_s_q))
-                print 'Wd_s_q latent', numpy.sum(numpy.abs(Wd_s_q[(Wd_s_q.shape[0]-state['latent_gaussian_per_utterance_dim']):Wd_s_q.shape[0], :])), numpy.mean(numpy.abs(Wd_s_q[(Wd_s_q.shape[0]-state['latent_gaussian_per_utterance_dim']):Wd_s_q.shape[0], :]))
+                print('Wd_s_q all', numpy.sum(numpy.abs(Wd_s_q)), numpy.mean(numpy.abs(Wd_s_q)))
+                print('Wd_s_q latent', numpy.sum(numpy.abs(Wd_s_q[(Wd_s_q.shape[0]-state['latent_gaussian_per_utterance_dim']):Wd_s_q.shape[0], :])), numpy.mean(numpy.abs(Wd_s_q[(Wd_s_q.shape[0]-state['latent_gaussian_per_utterance_dim']):Wd_s_q.shape[0], :])))
 
-                print 'Wd_s_q ratio', (numpy.sum(numpy.abs(Wd_s_q[(Wd_s_q.shape[0]-state['latent_gaussian_per_utterance_dim']):Wd_s_q.shape[0], :])) / numpy.sum(numpy.abs(Wd_s_q)))
+                print('Wd_s_q ratio', (numpy.sum(numpy.abs(Wd_s_q[(Wd_s_q.shape[0]-state['latent_gaussian_per_utterance_dim']):Wd_s_q.shape[0], :])) / numpy.sum(numpy.abs(Wd_s_q))))
 
                 if 'latent_gaussian_linear_dynamics' in state:
                     if state['latent_gaussian_linear_dynamics']:
                        prior_Wl_linear_dynamics = model.latent_utterance_variable_prior_encoder.Wl_linear_dynamics.get_value()
-                       print 'prior_Wl_linear_dynamics', numpy.sum(numpy.abs(prior_Wl_linear_dynamics)), numpy.mean(numpy.abs(prior_Wl_linear_dynamics)), numpy.std(numpy.abs(prior_Wl_linear_dynamics))
+                       print('prior_Wl_linear_dynamics', numpy.sum(numpy.abs(prior_Wl_linear_dynamics)), numpy.mean(numpy.abs(prior_Wl_linear_dynamics)), numpy.std(numpy.abs(prior_Wl_linear_dynamics)))
 
                        approx_posterior_Wl_linear_dynamics = model.latent_utterance_variable_approx_posterior_encoder.Wl_linear_dynamics.get_value()
-                       print 'approx_posterior_Wl_linear_dynamics', numpy.sum(numpy.abs(approx_posterior_Wl_linear_dynamics)), numpy.mean(numpy.abs(approx_posterior_Wl_linear_dynamics)), numpy.std(numpy.abs(approx_posterior_Wl_linear_dynamics))
+                       print('approx_posterior_Wl_linear_dynamics', numpy.sum(numpy.abs(approx_posterior_Wl_linear_dynamics)), numpy.mean(numpy.abs(approx_posterior_Wl_linear_dynamics)), numpy.std(numpy.abs(approx_posterior_Wl_linear_dynamics)))
 
                 #print 'grads_wrt_softmax', grads_wrt_softmax.shape, numpy.sum(numpy.abs(grads_wrt_softmax)), numpy.abs(grads_wrt_softmax[0:5,0:5])
                 #print 'grads_wrt_kl_divergence_cost', grads_wrt_kl_divergence_cost.shape, numpy.sum(numpy.abs(grads_wrt_kl_divergence_cost)), numpy.abs(grads_wrt_kl_divergence_cost[0:5,0:5])
@@ -406,7 +406,7 @@ def main(args):
                 logger.debug("[VALIDATION START]")
 
                 while True:
-                    batch = valid_data.next()
+                    batch = next(valid_data)
 
                     # Validation finished
                     if not batch:
@@ -443,9 +443,9 @@ def main(args):
                     valid_posterior_mean_variance += posterior_mean_variance
 
                     # Print batch statistics
-                    print 'valid_cost', valid_cost
-                    print 'valid_kl_divergence_cost sample', kl_divergence_cost
-                    print 'posterior_mean_variance', posterior_mean_variance
+                    print('valid_cost', valid_cost)
+                    print('valid_kl_divergence_cost sample', kl_divergence_cost)
+                    print('posterior_mean_variance', posterior_mean_variance)
 
 
                     valid_wordpreds_done += batch['num_preds']
@@ -464,7 +464,7 @@ def main(args):
 
                     # Save model if there is  decrease in validation cost
                     save(model, timings)
-                    print 'best valid_cost', valid_cost
+                    print('best valid_cost', valid_cost)
                 elif valid_cost >= timings["valid_cost"][-1] * state['cost_threshold']:
                     patience -= 1
 
@@ -476,10 +476,10 @@ def main(args):
 
                 # We need to catch exceptions due to high numbers in exp
                 try:
-                    print "** valid cost (NLL) = %.4f, valid word-perplexity = %.4f, valid kldiv cost (per word) = %.8f, valid mean posterior variance (per word) = %.8f, patience = %d" % (float(valid_cost), float(math.exp(valid_cost)), float(valid_kl_divergence_cost), float(valid_posterior_mean_variance), patience)
+                    print("** valid cost (NLL) = %.4f, valid word-perplexity = %.4f, valid kldiv cost (per word) = %.8f, valid mean posterior variance (per word) = %.8f, patience = %d" % (float(valid_cost), float(math.exp(valid_cost)), float(valid_kl_divergence_cost), float(valid_posterior_mean_variance), patience))
                 except:
                     try:
-                        print "** valid cost (NLL) = %.4f, patience = %d" % (float(valid_cost), patience)
+                        print("** valid cost (NLL) = %.4f, patience = %d" % (float(valid_cost), patience))
                     except:
                         pass
 

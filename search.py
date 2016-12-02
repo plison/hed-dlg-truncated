@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-import cPickle
+import pickle
 import traceback
 import logging
 import time
@@ -55,13 +55,13 @@ def sample_wrapper(sample_logic):
             samples, costs = sample_logic(sampler, joined_context, **kwargs) 
              
             # Convert back indices to list of words
-            converted_samples = map(lambda sample : sampler.model.indices_to_words(sample, exclude_end_sym=kwargs.get('n_turns', 1) == 1), samples)
+            converted_samples = [sampler.model.indices_to_words(sample, exclude_end_sym=kwargs.get('n_turns', 1) == 1) for sample in samples]
             # Join the list of words
-            converted_samples = map(' '.join, converted_samples)
+            converted_samples = list(map(' '.join, converted_samples))
 
             if verbose:
                 for i in range(len(converted_samples)):
-                    print "{}: {}".format(costs[i], converted_samples[i].encode('utf-8'))
+                    print("{}: {}".format(costs[i], converted_samples[i].encode('utf-8')))
 
             context_samples.append(converted_samples)
             context_costs.append(costs)
@@ -174,7 +174,7 @@ class Sampler(object):
             # Stack only when we sampled something
             if k > 0:
                 context = numpy.vstack([context, \
-                                        numpy.array(map(lambda g: g[-1], gen))]).astype('int32')
+                                        numpy.array([g[-1] for g in gen])]).astype('int32')
                 reversed_context = numpy.copy(context)
                 for idx in range(context.shape[1]):
                     eos_indices = numpy.where(context[:, idx] == self.model.eos_sym)[0]
@@ -299,7 +299,7 @@ class RandomSampler(Sampler):
         next_probs = next_probs.astype("float64") 
         word_indx = numpy.array([self.model.rng.choice(self.model.idim, p = x/numpy.sum(x))
                                     for x in next_probs], dtype='int32')
-        beam_indx = range(next_probs.shape[0])
+        beam_indx = list(range(next_probs.shape[0]))
 
         args = numpy.ravel_multi_index(numpy.array([beam_indx, word_indx]), next_costs.shape)
         return (beam_indx, word_indx), next_costs.flatten()[args]

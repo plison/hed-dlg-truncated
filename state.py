@@ -1,5 +1,5 @@
 from collections import OrderedDict
-import cPickle
+import pickle
 import os
 
 def prototype_state():
@@ -243,6 +243,45 @@ def prototype_test():
     state['qdim_decoder'] = 5
     state['sdim'] = 10
     state['rankdim'] = 10
+
+    return state
+
+
+
+def prototype_opensubs2016():
+    
+    state = prototype_state()
+    
+    # Fill your paths here!
+    state['train_dialogues'] = "../opensubs2016/opensubs2016.train.pkl"
+    state['test_dialogues'] = "../opensubs2016/opensubs2016.test.pkl"
+    state['valid_dialogues'] = "../opensubs2016/opensubs2016.dev.pkl"
+    state['dictionary'] = "../opensubs2016/opensubs2016.dict.pkl"
+    state['save_dir'] = "Output"
+
+    state['max_grad_steps'] = 80
+
+    state['valid_freq'] = 5000
+
+    state['prefix'] = "opensubs2016_"
+    state['updater'] = 'adam'
+
+    state['bidirectional_utterance_encoder'] = False
+    state['deep_dialogue_input'] = False
+    state['deep_out'] = False
+
+    state['bs'] = 50 # If out of memory, modify this!
+
+    state['reset_utterance_decoder_at_end_of_utterance'] = True
+    state['reset_utterance_encoder_at_end_of_utterance'] = True
+    state['utterance_decoder_gating'] = 'GRU'
+
+    state['lr'] = 0.0002
+
+    state['qdim_encoder'] = 300
+    state['qdim_decoder'] = 300
+    state['sdim'] = 600
+    state['rankdim'] = 256
 
     return state
 
