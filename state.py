@@ -253,7 +253,7 @@ def prototype_opensubs2016():
     state = prototype_state()
     
     # Fill your paths here!
-    state['train_dialogues'] = "../opensubs2016/opensubs2016.train.pkl"
+    state['train_dialogues'] = "../opensubs2016/opensubs2016.train.1.pkl"
     state['test_dialogues'] = "../opensubs2016/opensubs2016.test.pkl"
     state['valid_dialogues'] = "../opensubs2016/opensubs2016.dev.pkl"
     state['dictionary'] = "../opensubs2016/opensubs2016.dict.pkl"
